@@ -1,0 +1,150 @@
+package ogrenciagaci;
+
+import java.util.Scanner;
+
+public class OgrenciAgaci {
+    private AgacNode kok;
+
+    public OgrenciAgaci() {
+        this.kok = new AgacNode(' ');           //Boş kök düğüm
+    }
+
+    private int harfIndexAl(char harf) {
+        return harf - 'a'; // Küçük harfler için indeks hesapla
+    }
+
+    public void isimEkle(String isim) {
+        AgacNode current = kok;
+
+        for (char harf : isim.toLowerCase().toCharArray()) {    //String i küçük harflere dönüştür
+            int index = harfIndexAl(harf);     
+            if (current.cocuklar[index] == null) {     //Çocuklar dizisinde düğüm olup olmadığını kontrol eder
+                current.cocuklar[index] = new AgacNode(harf);
+            }
+
+            current = current.cocuklar[index];
+            current.isimSayisi++;
+        }
+    }
+
+    //İsim silme Kontrolü
+    public void isimGuncelle(String eskiIsim, String yeniIsim) {
+        if (!isimSil(eskiIsim)) {
+            System.out.println("Güncellenmesi istenilen isim bulunamadı.");
+            return;
+        }
+
+        isimEkle(yeniIsim);
+    }
+
+    private boolean isimSil(String isim) {
+        AgacNode current = kok;
+        for (char harf : isim.toLowerCase().toCharArray()) {
+            int index = harfIndexAl(harf);
+            if (current.cocuklar[index] == null) {       //Çocuk düğüm kontrolü
+                return false; // Isim ağaçta bulunamadı
+            }
+
+            current.isimSayisi--;
+            current = current.cocuklar[index];    //Alt seviyeye geçiş
+        }
+
+        //Düğüm silme
+        if (current.isimSayisi > 0) {
+            current.isimSayisi--;
+            return true;
+        }
+
+        // Alt düğümleri kontrol et
+        for (AgacNode cocuk : current.cocuklar) {
+            if (cocuk != null) {
+                return false; // Alt düğümlerde hala isim var
+            }
+        }
+
+        return true;
+    }
+
+    public void agaciGoruntule(AgacNode node, String boslukMiktari, boolean isimGuncelle, boolean isLast) {
+
+        if (node != null) {
+            if (node.isimSayisi>0) {         //0 dan büyükse düğümü görselleştirilir
+                System.out.print(boslukMiktari);     //Yatay konumda boşluk yazdırma
+                System.out.print(isLast ? "└── " : "├── ");  //Düğümdeki son çocuk ise
+                System.out.println(node.harf + " (" + node.isimSayisi + ")");
+            }
+            //Düğümlerin konumu ve içerdikleri isim sayıları
+            for (int i = 0; i < node.cocuklar.length; i++) {
+                agaciGoruntule(node.cocuklar[i],
+                        boslukMiktari + (isLast ? "    " : "│   "),
+                        isimGuncelle,
+                        i == node.cocuklar.length - 1);
+            }
+        }
+    }
+
+    //İsim güncellemesi yapılıp yapılmayacağına bakılır
+    public void agaciGoruntule(boolean isimGuncelle) {
+        agaciGoruntule(kok, "", isimGuncelle, true);
+    }
+
+    public static void main(String[] args) {
+        OgrenciAgaci agac = new OgrenciAgaci();
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\n1 - İsim Ekle");
+            System.out.println("2 - İsim Güncelle");
+            System.out.println("3 - Ağacı Göster");
+            System.out.println("4 - Çıkış");
+            System.out.print("Seçenek girin: ");
+
+            int secim = scanner.nextInt();
+            scanner.nextLine(); // dummy nextLine to consume the newline character
+
+            switch (secim) {
+                case 1:
+                    System.out.print("Eklemek istediğiniz ismi girin: ");
+                    String eklenenIsim = scanner.nextLine();
+                    agac.isimEkle(eklenenIsim);
+                    break;
+
+                case 2:
+                    System.out.print("Güncellemek istediğiniz ismi girin: ");
+                    String eskiIsim = scanner.nextLine();
+                    System.out.print("Yeni ismi girin: ");
+                    String yeniIsim = scanner.nextLine();
+                    agac.isimGuncelle(eskiIsim, yeniIsim);
+                    break;
+
+                case 3:
+                    System.out.println("Ağacın Güncel Durumu:");
+                    agac.agaciGoruntule(true); // isimGuncelle parametresi true olarak ayarlandı
+                    break;
+
+                case 4:
+                    System.out.println("Programdan çıkılıyor...");
+                    scanner.close();
+                    System.exit(0);     //Program sonlanır
+
+                default:
+                    System.out.println("Geçersiz seçenek. Lütfen tekrar deneyin.");
+                    break;
+            }
+        }
+    }
+}
+
+package ogrenciagaci;
+
+public class AgacNode {
+    char harf;
+    AgacNode[] cocuklar;
+    int isimSayisi;
+
+    public AgacNode(char harf) {
+        this.harf = harf;
+        this.cocuklar = new AgacNode[26]; // 26 harf için
+        this.isimSayisi = 0;
+    }
+}
