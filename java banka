@@ -1,0 +1,321 @@
+package bankaornek;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Musteri {
+
+    private String ad;
+    private String soyad;
+    private String tcKimlikNo;
+    private List<Hesap> hesaplar;
+
+    public Musteri(String ad, String soyad, String tcKimlikNo) {
+        this.ad = ad;
+        this.soyad = soyad;
+        this.tcKimlikNo = tcKimlikNo;
+        this.hesaplar = new ArrayList<>();
+    }
+
+    public void hesapEkle(Hesap hesap) {
+        hesaplar.add(hesap);
+    }
+
+    public void hesapOzetiGoruntule(int hesapNumarasi) {
+        Hesap hesap = hesapBul(hesapNumarasi);
+        if (hesap != null) {
+            hesap.hesapOzetiGoruntule();
+        } else {
+            System.out.println("Hesap bulunamadı.");
+        }
+    }
+
+    public void krediBasvurusuYap(Kredi kredi) {
+        kredi.setMusteri(this);
+        kredi.krediHesapla();
+    }
+
+    public Hesap hesapBul(int hesapNumarasi) {
+        for (Hesap hesap : hesaplar) {
+            if (hesap.getHesapNumarasi() == hesapNumarasi) {
+                return hesap;
+            }
+        }
+        return null;
+    }
+
+    public String getTcKimlikNo() {
+        return tcKimlikNo;
+    } 
+} 
+package bankaornek;
+
+public class KurumsalMusteri extends Musteri {
+
+    private String sirketAdi;
+    private String vergiNo;
+    private String telefonNumarasi;
+    private String email;
+
+    public KurumsalMusteri(String ad, String soyad, String tcKimlikNo, String sirketAdi, String vergiNo) {
+        super(ad, soyad, tcKimlikNo);
+        this.sirketAdi = sirketAdi;
+        this.vergiNo = vergiNo;
+    }
+
+    public void setTelefonNumarasi(String telefonNumarasi) {
+        this.telefonNumarasi = telefonNumarasi;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getTelefonNumarasi() {
+        return telefonNumarasi;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    
+    
+    public String getSirketAdi() {
+        return sirketAdi;
+    }
+
+    public void setSirketAdi(String sirketAdi) {
+        this.sirketAdi = sirketAdi;
+    }
+
+    public String getVergiNo() {
+        return vergiNo;
+    }
+
+    public void setVergiNo(String vergiNo) {
+        this.vergiNo = vergiNo;
+    }
+    
+    public void kurumsalBilgileriGoruntule(){
+        System.out.println(" irket ad : "+sirketAdi);
+        System.out.println("Vergi no: "+vergiNo);
+        System.out.println("Telefon numaras : "+telefonNumarasi);
+        System.out.println("Mail bilgisi: "+email);
+    }
+    
+    public void vergiBilgisiGuncelle(String yeniVergiNo){
+        this.vergiNo=yeniVergiNo;
+        System.out.println("Vergi numaras  g ncellendi...");
+    }
+    
+    public void krediBasvurusuYap(String krediTuru, double talepEdilenMiktar, int vade){
+        Kredi kredi=new Kredi(krediTuru,talepEdilenMiktar,vade);
+        kredi.setMusteri(this);
+        kredi.krediHesapla();
+    }
+    
+    public void hesapOzetiGoruntule(int hesapNumarasi){
+        Hesap hesap=hesapBul(hesapNumarasi);
+        if (hesap !=null) {
+            hesap.hesapOzetiGoruntule();
+        }
+        else{
+            System.out.println("Hesap bulunamad ...");
+        }
+    }
+}
+package bankaornek;
+
+public class Islem {
+
+    private String islemTuru;
+    private double miktar;
+    private int hedefHesapNumarasi;
+
+    public Islem(String islemTuru, double miktar) {
+        this.islemTuru = islemTuru;
+        this.miktar = miktar;
+    }
+
+    public Islem(String islemTuru, double miktar, int hesapNumarasi) {
+        this.islemTuru = islemTuru;
+        this.miktar = miktar;
+        this.hedefHesapNumarasi = hesapNumarasi;
+    }
+
+    public String getIslemTuru() {
+        return islemTuru;
+    }
+
+    public double getMiktar() {
+        return miktar;
+    }
+
+    public int getHedefHesapNumarasi() {
+        return hedefHesapNumarasi;
+    }
+
+    @Override
+    public String toString() {
+        if (islemTuru.equals("Para Transferi")) {
+            return islemTuru + ": " + miktar + " Hedef Hesap: " + hedefHesapNumarasi;
+        } else {
+            return islemTuru + ": " + miktar;
+        }
+    }
+
+}
+
+package bankaornek;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Hesap {
+
+    private int hesapNumarasi;
+    private double bakiye;
+    private List<Islem> islemler;
+
+    public Hesap(int hesapNumarasi) {
+        this.hesapNumarasi = hesapNumarasi;
+        this.bakiye = 0.0;
+        this.islemler = new ArrayList<>();
+    }
+    
+    public void paraYatir(double miktar){
+        bakiye+=miktar;
+        islemler.add(new Islem("Para Yatırma",miktar));
+    }
+    
+    public void paraCek(double miktar){
+        if (miktar <=bakiye) {
+            bakiye-=miktar;
+            islemler.add(new Islem("Para Çekme",miktar));
+        }
+        else{
+            System.out.println("Yetersiz bakiye...");
+        }
+    }
+    
+    public int getHesapNumarasi() {
+        return hesapNumarasi;
+    }
+    
+    public double getBakiye(){
+        return bakiye;
+    }
+    
+    public List<Islem> getIslemler(){
+        return islemler;
+    }
+
+    public void paraTransferi(Hesap hedefHesap, double miktar) {
+        if (miktar<=bakiye) {
+            bakiye-=miktar;
+            hedefHesap.paraYatir(miktar);
+            islemler.add(new Islem("Para Transferi", miktar, hedefHesap.getHesapNumarasi()));
+        }
+        else{
+            System.out.println("Fakirsin. Yetersiz Bakiye...");
+        }
+    }
+
+    public void gunlukFaizHesapla(double faizOrani) {
+        double faizMiktari=bakiye*(faizOrani/100);
+        bakiye+=faizMiktari;
+        islemler.add(new Islem("Günlük faiz parası",faizMiktari)); 
+    }
+
+    public void hesapOzetiGoruntule() {
+        System.out.println("Hesap Numarası: "+hesapNumarasi);
+        System.out.println("Bakiye: "+bakiye);
+        System.out.println("Islemler: ");
+        for (Islem islem:islemler) {
+            System.out.println(islem);
+        }
+    }
+}
+package bankaornek;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Banka {
+
+    private String bankaAdi;
+    private String adres;
+    private List<Musteri> musteriler;
+    private List<Hesap> hesaplar;
+    private List<Kredi> krediler;
+
+    public Banka(String bankaAdi, String adres) {
+        this.bankaAdi = bankaAdi;
+        this.adres = adres;
+        this.musteriler = new ArrayList<>();
+        this.hesaplar = new ArrayList<>();
+        this.krediler = new ArrayList<>();
+    }
+
+    public void musteriEkle(Musteri musteri) {
+        musteriler.add(musteri);
+    }
+
+    public void hesapEkle(Hesap hesap) {
+        hesaplar.add(hesap);
+    }
+
+    public void krediEkle(Kredi kredi) {
+        krediler.add(kredi);
+    }
+
+    public Musteri musteriBul(String tcKimlikNo) {
+        for (Musteri musteri : musteriler) {
+            if (musteri.getTcKimlikNo().equals(tcKimlikNo)) {
+                return musteri;
+            }
+        }
+        return null;
+    }
+
+    public Hesap hesapBul(int hesapNumarasi) {
+        for (Hesap hesap : hesaplar) {
+            if (hesap.getHesapNumarasi() == hesapNumarasi) {
+                return hesap;
+            }
+        }
+        return null;
+    }
+
+    public void paraTransferi(int kaynakHesapNumarasi, int hedefHesapNumarasi, double miktar) {
+        Hesap kaynakHesap = hesapBul(kaynakHesapNumarasi);
+        Hesap hedefHesap = hesapBul(hedefHesapNumarasi);
+
+        if (kaynakHesap != null && hedefHesap != null) {
+            kaynakHesap.paraTransferi(hedefHesap, miktar);
+        } else {
+            System.out.println("Hesap bulunamad . Para transferi ger ekle tirilemedi.");
+        }
+    }
+
+    public void gunlukFaizHesapla(double faizOrani) {
+        for (Hesap hesap : hesaplar) {
+            hesap.gunlukFaizHesapla(faizOrani);
+        }
+    }
+
+    public void musterileriRaporla() {
+        System.out.println("Bankan n M  terileri:");
+        for (Musteri musteri : musteriler) {
+            System.out.println(musteri);
+        }
+    }
+
+    public void krediBasvurulariniRaporla() {
+        System.out.println("Bankan n Kredi Ba vurular :");
+        for (Kredi kredi : krediler) {
+            System.out.println(kredi);
+        }
+    }
+}
